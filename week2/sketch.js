@@ -73,20 +73,6 @@ function keyPressed() {
     // logits.print();
 }
 
-function goClassify() {
-    const logits = features.infer(video);
-    knn.classify(logits, function(error, result){
-        if (error) {
-            console.error(error);
-        } else {
-            label = result.label;
-            labelP.html(label);
-            // console.log(result);
-            goClassify();
-        }
-    })
-}
-
 function modelReady() {
     console.log("MobileNet loaded");
     knn = ml5.KNNClassifier();
@@ -95,6 +81,20 @@ function modelReady() {
         goClassify();
     })
 
+}
+
+function goClassify() {
+    const logits = features.infer(video);
+    knn.classify(logits, function(error, result){
+        if (error) {
+            console.error(error);
+        } else {
+            label = result.label;
+            labelP.html(label);
+            console.log(result);
+            goClassify();
+        }
+    })
 }
 
 function draw () {
