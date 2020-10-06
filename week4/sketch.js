@@ -82,6 +82,13 @@ function draw() {
     fill(255);
     rect(0, 0, windowWidth, windowHeight);
   }
+  
+  for (let i = 0; i < 400; i+=20) {
+    for (let j = 0; i< 400; j += 20) {
+      fill(0);
+      ellipse(i, j, 1, 1);
+    }
+  }
 
   // drawKeypoints();
 
