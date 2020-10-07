@@ -1,9 +1,8 @@
 let facemesh;
-let hanpose;
 let video;
 let facePred = [];
 let handPred = [];
-let count = 0;
+let areaPoints = [];
 
 // mesh annotations
 // source: https://github.com/tensorflow/tfjs-models/blob/master/facemesh/src/keypoints.ts
@@ -53,21 +52,21 @@ const mesh = {
 };
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth*0.8, windowHeight*0.8);
   video = createCapture(VIDEO);
   video.size(width, height);
 
+  // face mesh
   facemesh = ml5.facemesh(video, modelReady);
-  // handpose = ml5.handpose(video, modelReady);
-
   facemesh.on("predict", results => {
     facePred = results;  
   });
   
+  // hand pose (deleted because of performance issues)
+  // handpose = ml5.handpose(video, modelReady);
   // handpose.on("predict", results => {
   //   handPred = results;
   // });
-
   video.hide();
 }
 
@@ -76,19 +75,20 @@ function modelReady() {
 }
 
 function draw() {
-  count ++;
-  if (count % 20 === 0) {
-    blendMode(BLEND);
-    fill(255);
-    rect(0, 0, windowWidth, windowHeight);
-  }
+  blendMode(BLEND);
+  background(255);
 
+  // hand pose (deleted because of performance issues)
   // drawKeypoints();
 
   //silhouette / cheeks
   drawDimension('lightpink','silhouette', 'rgba(255,255,255, 0.05)');
   drawDimension('lightpink','rightCheek', 'rgba(255,255,255, 0.05)');
   drawDimension('lightpink','leftCheek', 'rgba(255,255,255, 0.05)');
+
+  // draw lines for silhouette
+  drawLines('silhouette');
+
 
   //lips
   drawDimension('aqua','lipsUpperOuter', 'rgba(255,255,255, 0.05)');
@@ -126,21 +126,58 @@ function draw() {
   drawDimension('DarkSeaGreen','noseLeftCorner', 'rgba(255,255,255, 0.05)');
 }
 
+function drawLines(area) {
 
-function drawDimension(color, area, fillColor) {
-  blendMode(DARKEST);
+  stroke(0);
+  strokeWeight(0.05);
+    for (let a = 30; a < windowWidth; a+= 60) {
+      if (a <= 30 || a > windowHeight - 60) {
+        for (let b = 30; b < windowHeight; b+=60) {
+          areaPoints.push([a,b]);
+        }
+      } else {
+        for (let b = 30; b <= windowHeight; b+=60) {
+          if(b <= 30 || b >= windowHeight - 240) {
+            areaPoints.push([a,b]);
+          }
+        }
+      }
+    }
+
   for (let i = 0; i < facePred.length; i += 1) {
     const keypoints = facePred[i].scaledMesh;
-    let areaPoints = [];
     for (let j = 0; j < keypoints.length - 2; j++) {
       if (mesh[area].includes(j)) {
         const [x, y] = keypoints[j];
-        areaPoints.push([x,y]);
+        beginShape(LINES);
+        vertex(x,y);
+        vertex(areaPoints[Math.floor(random(areaPoints.length))][0],areaPoints[Math.floor(random(areaPoints.length))][1]);
+        endShape();
+      }
+    }
+  }
+
+    
+}
+
+function drawDimension(color, area, fillColor) {
+  
+  blendMode(DARKEST);
+  for (let i = 0; i < facePred.length; i += 1) {
+    const keypoints = facePred[i].scaledMesh;
+    for (let j = 0; j < keypoints.length - 2; j++) {
+      if (mesh[area].includes(j)) {
+        const [x, y] = keypoints[j];
+        const [newx, newy] = keypoints[j+1];
+        const [lerpx, lerpy] = [lerp(x, newx, 0.2), lerp(y, newy, 0.2)]
+       
         stroke(color);
         fill(fillColor);
         strokeWeight(0.3);
+
+        ellipse(x,y,3,3);
         beginShape(TRIANGLES);
-          vertex(x,y);
+          vertex(lerpx,lerpy);
           vertex(keypoints[j+1][0],keypoints[j+1][1]);
           vertex(keypoints[j+2][0],keypoints[j+2][1]);
         endShape();
@@ -151,26 +188,27 @@ function drawDimension(color, area, fillColor) {
   
 }
 
-function drawKeypoints() {
-  for (let i = 0; i < facePred.length; i += 1) {
-    const keypoints = facePred[i].scaledMesh;
+// hand pose (deleted because of performance issues)
+// function drawKeypoints() {
+//   for (let i = 0; i < facePred.length; i += 1) {
+//     const keypoints = facePred[i].scaledMesh;
     
-    // hand
-    for (let i = 0; i < handPred.length; i += 1) {
-      const prediction = handPred[i];
-      for (let j = 0; j < prediction.landmarks.length; j += 1) {
-        const keypoint = prediction.landmarks[j];
+//     // hand
+//     for (let i = 0; i < handPred.length; i += 1) {
+//       const prediction = handPred[i];
+//       for (let j = 0; j < prediction.landmarks.length; j += 1) {
+//         const keypoint = prediction.landmarks[j];
 
-        stroke('cornflowerblue');
-        fill('rgba(0,0,0, 0.05)');
-        strokeWeight(0.5);
-        beginShape(LINES);
-        vertex(keypoint[0], keypoint[1]);
-        vertex(keypoint[2], keypoint[3]);
-        endShape();
+//         stroke('cornflowerblue');
+//         fill('rgba(0,0,0, 0.05)');
+//         strokeWeight(0.5);
+//         beginShape(LINES);
+//         vertex(keypoint[0], keypoint[1]);
+//         vertex(keypoint[2], keypoint[3]);
+//         endShape();
 
-        ellipse(keypoint[0], keypoint[1], 2, 2);
-      }
-    }
-  }
-}
+//         ellipse(keypoint[0], keypoint[1], 2, 2);
+//       }
+//     }
+//   }
+// }
