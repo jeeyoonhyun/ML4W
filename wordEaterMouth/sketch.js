@@ -7,6 +7,8 @@ let particles = [];
 let font;
 let wordlist = ["f", "he", "described", "a", "simple", "app", "for", "posting", "and", "viewing", "photos", "as", "a", "user", "would", "on", "nstagram", "the", "system", "generated", "the", "code", "needed", "to", "build", "it", "his", "code", "was", "sometimes", "flawed", "ut", "typically", "if", "r", "inger", "made", "just", "a", "tweak", "or", "two", "it", "worked", "as", "he", "wanted", "ts", "not", "absolutely", "perfect", "he", "said", "ut", "it", "is", "very", "very", "close"];
 let selectedWords = [];
+let mouthX;
+let mouthY;
 
 // particles
 class Particle {
@@ -27,7 +29,7 @@ class Particle {
       
       push();
       translate(this.x-windowWidth/2,this.y-windowHeight/2);
-      if (dist(mouseX, mouseY, this.x, this.y) < 50) {
+      if (dist(mouthX, mouthY, this.x, this.y) < 50) {
         fill('black');
         stroke('white');
         rotateX(frameCount * 0.05);
@@ -40,7 +42,8 @@ class Particle {
 
       push();
       translate(this.x-windowWidth/2,this.y-windowHeight/2);
-      if (dist(mouseX, mouseY, this.x, this.y) < 50) {
+      if (dist(mouthX, mouthY, this.x, this.y) < 50) {
+        scale(-1, 1); //flip webcam
         textAlign(CENTER, CENTER);
         fill('black');
         textSize(14 + this.r/2);
@@ -79,7 +82,7 @@ function setup() {
   canvas.style('z-index','-1')
 
   video = createCapture(VIDEO);
-  video.size(width, height);
+  video.size(windowWidth, windowHeight);
 
   // face mesh
   facemesh = ml5.facemesh(video, modelReady);
@@ -99,24 +102,27 @@ function modelReady() {
 }
 
 function draw() {
+  scale(-1, 1); //flip webcam
   if (selectedWords.join(' ').length > 300) {
     selectedWords = [];
   }
 
   blendMode(BLEND);
   background(255);
+  push();
 
-  ellipse(mouseX-windowWidth/2, mouseY-windowHeight/2, 100);
+  pop();
 
   for(let i = 0;i<particles.length;i++) {
     particles[i].createParticle();
-    if (dist(mouseX, mouseY, particles[i].x, particles[i].y) < 50 && mouseIsPressed) {
+    if (dist(mouthX, mouthY, particles[i].x, particles[i].y) < 50 && mouseIsPressed) {
       particles.splice(i,1)
       selectedWords.push(particles[i].word);
     }
     particles[i].moveParticle();
   }
     push();
+    scale(-1, 1); //flip webcam again
     fill('black');
     textFont(font);
     textSize(60);
@@ -125,10 +131,16 @@ function draw() {
 
 
   //lips
+  push();
+  
   drawBox('black','lipsUpperOuter', 'rgba(255,255,255, 0.05)');
   drawBox('black','lipsLowerOuter', 'rgba(255,255,255, 0.05)');
   drawBox('black','lipsUpperInner', 'rgba(255,255,255, 0.05)');
   drawBox('black','lipsLowerInner', 'rgba(255,255,255, 0.05)');
+  noStroke();
+  fill('rgba(0,0,0, 0.1)');
+  ellipse(mouthX-windowWidth/2, mouthY-windowHeight/2, 100);
+  pop();
 
 }
 
@@ -138,15 +150,13 @@ function drawBox(color = 'black', area, fillColor, size = 4) {
     for (let j = 0; j < keypoints.length - 2; j++) {
       if (mesh[area].includes(j)) {
         const [x, y] = keypoints[j];
-        const [newx, newy] = keypoints[j+1];
-        const [lerpx, lerpy] = [lerp(x, newx, 0.2), lerp(y, newy, 0.2)]
+        mouthX = x;
+        mouthY = y;
         stroke(color);
         fill(fillColor);
         push();
         translate(x-windowWidth/2,y-windowHeight/2);
-        rotateX(frameCount * 0.05);
-        rotateY(frameCount * 0.05);
-        box(size);
+        ellipse(0,0,size)
         pop();
       }
     }

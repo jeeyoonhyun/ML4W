@@ -61,15 +61,6 @@ class Particle {
     }
   }
 
-// mesh annotations
-// source: https://github.com/tensorflow/tfjs-models/blob/master/facemesh/src/keypoints.ts
-const mesh = {
-  lipsUpperOuter: [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291],
-  lipsLowerOuter: [146, 91, 181, 84, 17, 314, 405, 321, 375, 291],
-  lipsUpperInner: [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308],
-  lipsLowerInner: [78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308],
-};
-
 function preload() {
   font = loadFont('./OpenSans.ttf');
 }
@@ -77,17 +68,6 @@ function setup() {
   canvas = createCanvas(windowWidth, windowHeight, WEBGL);
   canvas.position(0,0);
   canvas.style('z-index','-1')
-
-  video = createCapture(VIDEO);
-  video.size(width, height);
-
-  // face mesh
-  facemesh = ml5.facemesh(video, modelReady);
-  facemesh.on("predict", results => {
-    facePred = results;  
-  });
-  
-  video.hide();
   
   for(let i = 0;i<width/10;i++){
     particles.push(new Particle());
@@ -122,60 +102,5 @@ function draw() {
     textSize(60);
     text(selectedWords.join(' '),-windowWidth/2+40,-windowHeight/2+40, windowWidth-80,windowHeight-80);
     pop();
-
-
-  //lips
-  drawBox('black','lipsUpperOuter', 'rgba(255,255,255, 0.05)');
-  drawBox('black','lipsLowerOuter', 'rgba(255,255,255, 0.05)');
-  drawBox('black','lipsUpperInner', 'rgba(255,255,255, 0.05)');
-  drawBox('black','lipsLowerInner', 'rgba(255,255,255, 0.05)');
-
 }
-
-function drawBox(color = 'black', area, fillColor, size = 4) {
-  for (let i = 0; i < facePred.length; i += 1) {
-    const keypoints = facePred[i].scaledMesh;
-    for (let j = 0; j < keypoints.length - 2; j++) {
-      if (mesh[area].includes(j)) {
-        const [x, y] = keypoints[j];
-        const [newx, newy] = keypoints[j+1];
-        const [lerpx, lerpy] = [lerp(x, newx, 0.2), lerp(y, newy, 0.2)]
-        stroke(color);
-        fill(fillColor);
-        push();
-        translate(x-windowWidth/2,y-windowHeight/2);
-        rotateX(frameCount * 0.05);
-        rotateY(frameCount * 0.05);
-        box(size);
-        pop();
-      }
-    }
-  }
-}
-
-
-// hand pose (deleted because of performance issues)
-// function drawKeypoints() {
-//   for (let i = 0; i < facePred.length; i += 1) {
-//     const keypoints = facePred[i].scaledMesh;
-    
-//     // hand
-//     for (let i = 0; i < handPred.length; i += 1) {
-//       const prediction = handPred[i];
-//       for (let j = 0; j < prediction.landmarks.length; j += 1) {
-//         const keypoint = prediction.landmarks[j];
-
-//         stroke('cornflowerblue');
-//         fill('rgba(0,0,0, 0.05)');
-//         strokeWeight(0.5);
-//         beginShape(LINES);
-//         vertex(keypoint[0], keypoint[1]);
-//         vertex(keypoint[2], keypoint[3]);
-//         endShape();
-
-//         ellipse(keypoint[0], keypoint[1], 2, 2);
-//       }
-//     }
-//   }
-// }
   
