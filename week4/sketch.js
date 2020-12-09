@@ -26,7 +26,7 @@ const mesh = {
   rightEyeLower2: [226, 31, 228, 229, 230, 231, 232, 233, 244],
   rightEyeLower3: [143, 111, 117, 118, 119, 120, 121, 128, 245],
 
-  rightEyebrowUpper: [156, 70, 63, 105, 66, 107, 55, 193],
+  rightEyebrowUpper: [70, 63, 105, 66, 107,],
   rightEyebrowLower: [35, 124, 46, 53, 52, 65],
 
   leftEyeUpper0: [466, 388, 387, 386, 385, 384, 398],
@@ -37,7 +37,7 @@ const mesh = {
   leftEyeLower2: [446, 261, 448, 449, 450, 451, 452, 453, 464],
   leftEyeLower3: [372, 340, 346, 347, 348, 349, 350, 357, 465],
 
-  leftEyebrowUpper: [383, 300, 293, 334, 296, 336, 285, 417],
+  leftEyebrowUpper: [300, 293, 334, 296, 336,],
   leftEyebrowLower: [265, 353, 276, 283, 282, 295],
 
   midwayBetweenEyes: [168],
@@ -52,7 +52,7 @@ const mesh = {
 };
 
 function setup() {
-  createCanvas(windowWidth*0.8, windowHeight*0.8);
+  createCanvas(windowWidth, windowHeight, WEBGL);
   video = createCapture(VIDEO);
   video.size(width, height);
 
@@ -68,6 +68,10 @@ function setup() {
   //   handPred = results;
   // });
   video.hide();
+
+  for(let i = 0;i<width/10;i++){
+    particles.push(new Particle());
+  }
 }
 
 function modelReady() {
@@ -78,66 +82,86 @@ function draw() {
   blendMode(BLEND);
   background(255);
 
-  // hand pose (deleted because of performance issues)
-  // drawKeypoints();
+//   hand pose (deleted because of performance issues)
+//   drawKeypoints();
 
   //silhouette / cheeks
-  drawDimension('lightpink','silhouette', 'rgba(255,255,255, 0.05)');
-  drawDimension('lightpink','rightCheek', 'rgba(255,255,255, 0.05)');
-  drawDimension('lightpink','leftCheek', 'rgba(255,255,255, 0.05)');
+  drawBox('black','silhouette', 'rgba(255,255,255, 0.05)',6);
+  // drawBox('lightpink','rightCheek', 'rgba(255,255,255, 0.05)');
+  // drawBox('lightpink','leftCheek', 'rgba(255,255,255, 0.05)');
 
   // draw lines for silhouette
-  drawLines('silhouette');
+  // drawLines('silhouette');
 
 
   //lips
-  drawDimension('aqua','lipsUpperOuter', 'rgba(255,255,255, 0.05)');
-  drawDimension('aqua','lipsLowerOuter', 'rgba(255,255,255, 0.05)');
-  drawDimension('aqua','lipsUpperInner', 'rgba(255,255,255, 0.05)');
-  drawDimension('aqua','lipsLowerInner', 'rgba(255,255,255, 0.05)');
+  drawBox('black','lipsUpperOuter', 'rgba(255,255,255, 0.05)');
+  drawBox('black','lipsLowerOuter', 'rgba(255,255,255, 0.05)');
+  drawBox('black','lipsUpperInner', 'rgba(255,255,255, 0.05)');
+  drawBox('black','lipsLowerInner', 'rgba(255,255,255, 0.05)');
 
   //rightEye
-  drawDimension('lightgreen','rightEyeUpper0', 'rgba(255,255,255, 0.05)');
-  drawDimension('lightgreen','rightEyeLower0', 'rgba(255,255,255, 0.05)');
-  // drawDimension('lightgreen','rightEyeUpper1', 'rgba(255,255,255, 0.05)');
-  // drawDimension('lightgreen','rightEyeLower1', 'rgba(255,255,255, 0.05)');
-  // drawDimension('lightgreen','rightEyeUpper2', 'rgba(255,255,255, 0.05)');
-  // drawDimension('lightgreen','rightEyeLower2', 'rgba(255,255,255, 0.05)');
-  // drawDimension('lightgreen','rightEyeLower3', 'rgba(255,255,255, 0.05)');
-  drawDimension('lightgreen','rightEyebrowUpper', 'rgba(255,255,255, 0.05)');
-  drawDimension('lightgreen','rightEyebrowLower', 'rgba(255,255,255, 0.05)');
+  drawBox('black','rightEyeUpper0', 'rgba(255,255,255, 0.05)',4);
+  drawBox('black','rightEyeLower0', 'rgba(255,255,255, 0.05)',4);
+  // drawBox('black','rightEyeUpper1', 'rgba(255,255,255, 0.05)',4);
+  // drawBox('black','rightEyeLower1', 'rgba(255,255,255, 0.05)',4);
+  // drawBox('black','rightEyeUpper2', 'rgba(255,255,255, 0.05)',4);
+  // drawBox('black','rightEyeLower2', 'rgba(255,255,255, 0.05)',4);
+  // drawBox('black','rightEyeLower3', 'rgba(255,255,255, 0.05)',4);
+  drawBox('black','rightEyebrowUpper', 'rgba(255,255,255, 0.05)',4);
+  // drawBox('black','rightEyebrowLower', 'rgba(255,255,255, 0.05)',4);
 
   //leftEye
-  drawDimension('lightgreen','leftEyeUpper0', 'rgba(255,255,255, 0.05)');
-  drawDimension('lightgreen','leftEyeLower0', 'rgba(255,255,255, 0.05)');
-  // drawDimension('lightgreen','leftEyeUpper1', 'rgba(255,255,255, 0.05)');
-  // drawDimension('lightgreen','leftEyeLower1', 'rgba(255,255,255, 0.05)');
-  // drawDimension('lightgreen','leftEyeUpper2', 'rgba(255,255,255, 0.05)');
-  // drawDimension('lightgreen','leftEyeLower2', 'rgba(255,255,255, 0.05)');
-  // drawDimension('lightgreen','leftEyeLower3', 'rgba(255,255,255, 0.05)');
-  drawDimension('lightgreen','leftEyebrowUpper', 'rgba(255,255,255, 0.05)');
-  drawDimension('lightgreen','leftEyebrowLower', 'rgba(255,255,255, 0.05)');
+  drawBox('black','leftEyeUpper0', 'rgba(255,255,255, 0.05)',4);
+  drawBox('black','leftEyeLower0', 'rgba(255,255,255, 0.05)',4);
+  // drawBox('black','leftEyeUpper1', 'rgba(255,255,255, 0.05)');
+  // drawBox('black','leftEyeLower1', 'rgba(255,255,255, 0.05)');
+  // drawBox('black','leftEyeUpper2', 'rgba(255,255,255, 0.05)');
+  // drawBox('black','leftEyeLower2', 'rgba(255,255,255, 0.05)');
+  // drawBox('black','leftEyeLower3', 'rgba(255,255,255, 0.05)');
+  drawBox('black','leftEyebrowUpper', 'rgba(255,255,255, 0.05)');
+  // drawBox('black','leftEyebrowLower', 'rgba(255,255,255, 0.05)');
 
   //nose
-  drawDimension('DarkSeaGreen','midwayBetweenEyes', 'rgba(255,255,255, 0.05)');
-  drawDimension('DarkSeaGreen','noseTip', 'rgba(255,255,255, 0.05)');
-  drawDimension('DarkSeaGreen','noseBottom', 'rgba(255,255,255, 0.05)');
-  drawDimension('DarkSeaGreen','noseRightCorner', 'rgba(255,255,255, 0.05)');
-  drawDimension('DarkSeaGreen','noseLeftCorner', 'rgba(255,255,255, 0.05)');
+  // drawBox('black','midwayBetweenEyes', 'rgba(255,255,255, 0.05)');
+  drawBox('black','noseTip', 'rgba(255,255,255, 0.05)');
+  drawBox('black','noseBottom', 'rgba(255,255,255, 0.05)');
+  drawBox('black','noseRightCorner', 'rgba(255,255,255, 0.05)');
+  drawBox('black','noseLeftCorner', 'rgba(255,255,255, 0.05)');
+}
+
+function drawBox(color = 'black', area, fillColor, size = 4) {
+  for (let i = 0; i < facePred.length; i += 1) {
+    const keypoints = facePred[i].scaledMesh;
+    for (let j = 0; j < keypoints.length - 2; j++) {
+      if (mesh[area].includes(j)) {
+        const [x, y] = keypoints[j];
+        const [newx, newy] = keypoints[j+1];
+        const [lerpx, lerpy] = [lerp(x, newx, 0.2), lerp(y, newy, 0.2)]
+        stroke(color);
+        fill(fillColor);
+        push();
+        translate(x-windowWidth/2,y-windowHeight/2);
+        rotateX(frameCount * 0.05);
+        rotateY(frameCount * 0.05);
+        box(size);
+        pop();
+      }
+    }
+  }
 }
 
 function drawLines(area) {
-
   stroke(0);
   strokeWeight(0.05);
-    for (let a = 30; a < windowWidth; a+= 60) {
-      if (a <= 30 || a > windowHeight - 60) {
-        for (let b = 30; b < windowHeight; b+=60) {
+    for (let a = -windowWidth/2 ; a < windowWidth/2; a+= 60) {
+      if (a <= -windowHeight/2 || a > windowHeight/2) {
+        for (let b = 30 - windowHeight/2; b < windowHeight/2; b+=60) {
           areaPoints.push([a,b]);
         }
       } else {
-        for (let b = 30; b <= windowHeight; b+=60) {
-          if(b <= 30 || b >= windowHeight - 240) {
+        for (let b = -windowHeight/2; b <= windowHeight/2; b+=60) {
+          if(b <= -windowHeight/2 || b >= windowHeight/2) {
             areaPoints.push([a,b]);
           }
         }
@@ -156,8 +180,6 @@ function drawLines(area) {
       }
     }
   }
-
-    
 }
 
 function drawDimension(color, area, fillColor) {
@@ -173,7 +195,7 @@ function drawDimension(color, area, fillColor) {
        
         stroke(color);
         fill(fillColor);
-        strokeWeight(0.3);
+        strokeWeight(0.5);
 
         ellipse(x,y,3,3);
         beginShape(TRIANGLES);
@@ -212,3 +234,4 @@ function drawDimension(color, area, fillColor) {
 //     }
 //   }
 // }
+  

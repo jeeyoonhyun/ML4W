@@ -1,78 +1,57 @@
 /*
-  Button LED
-
-  This example creates a BLE peripheral with service that contains a
-  characteristic to control an LED and another characteristic that
-  represents the state of the button.
-
-  The circuit:
-  - Arduino MKR WiFi 1010 or Arduino Uno WiFi Rev2 board
-  - Button connected to pin 4
-
-  This example code is in the public domain.
+  Arduino Nano 33 BLE Getting Started
+  BLE peripheral with a simple Hello World greeting service that can be viewed
+  on a mobile phone
+  Adapted from Arduino BatteryMonitor example
 */
 
 #include <ArduinoBLE.h>
 
-const int ledPin = LED_BUILTIN; // set ledPin to on-board LED
-const int buttonPin = 4; // set buttonPin to digital pin 4
+static const char* greeting = "Hello World!";
 
-BLEService ledService("19B10010-E8F2-537E-4F6C-D104768A1214"); // create service
+BLEService greetingService("180C");  // User defined service
 
-// create switch characteristic and allow remote device to read and write
-//BLEByteCharacteristic ledCharacteristic("19B10011-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite);
-// create button characteristic and allow remote device to get notifications
-BLEIntCharacteristic buttonCharacteristic("19B10012-E8F2-537E-4F6C-D104768A1214", BLERead | BLENotify);
+BLEStringCharacteristic greetingCharacteristic("2A56",  // standard 16-bit characteristic UUID
+    BLERead, 13); // remote clients will only be able to read this
 
-int sensorValue = 255;
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600);    // initialize serial communication
   while (!Serial);
 
-  pinMode(ledPin, OUTPUT); // use the LED as an output
-  pinMode(buttonPin, INPUT); // use button pin as an input
+  pinMode(LED_BUILTIN, OUTPUT); // initialize the built-in LED pin
 
-  // begin initialization
-  if (!BLE.begin()) {
+  if (!BLE.begin()) {   // initialize BLE
     Serial.println("starting BLE failed!");
-
     while (1);
   }
 
-  // set the local name peripheral advertises
-  BLE.setLocalName("ButtonLED");
-  // set the UUID for the service this peripheral advertises:
-  BLE.setAdvertisedService(ledService);
+  BLE.setLocalName("Nano33BLE");  // Set name for connection
+  BLE.setAdvertisedService(greetingService); // Advertise service
+  greetingService.addCharacteristic(greetingCharacteristic); // Add characteristic to service
+  BLE.addService(greetingService); // Add service
+  greetingCharacteristic.setValue(greeting); // Set greeting string
 
-  // add the characteristics to the service
-  //ledService.addCharacteristic(ledCharacteristic);
-  ledService.addCharacteristic(buttonCharacteristic);
-
-  // add the service
-  BLE.addService(ledService);
-
-  //ledCharacteristic.writeValue(0);
-  buttonCharacteristic.writeValue(0);
-
-  // start advertising
-  BLE.advertise();
-
-  Serial.println("Bluetooth device active, waiting for connections...");
+  BLE.advertise();  // Start advertising
+  Serial.print("Peripheral device MAC: ");
+  Serial.println(BLE.address());
+  Serial.println("Waiting for connections...");
 }
 
 void loop() {
-  // poll for BLE events
-  BLE.poll();
+  BLEDevice central = BLE.central();  // Wait for a BLE central to connect
 
-  if (millis() % 1000 == 0) {
+  // if a central is connected to the peripheral:
+  if (central) {
+    Serial.print("Connected to central MAC: ");
+    // print the central's BT address:
+    Serial.println(central.address());
+    // turn on the LED to indicate the connection:
+    digitalWrite(LED_BUILTIN, HIGH);
 
-    sensorValue --;
-    if (sensorValue < 0) {
-      sensorValue = 255;
-    }
-    Serial.println(sensorValue);
-    buttonCharacteristic.writeValue(sensorValue);
-
+    while (central.connected()){} // keep looping while connected
+    
+    // when the central disconnects, turn off the LED:
+    digitalWrite(LED_BUILTIN, LOW);
+    Serial.print("Disconnected from central MAC: ");
+    Serial.println(central.address());
   }
-
-}
