@@ -69,9 +69,6 @@ function setup() {
   // });
   video.hide();
 
-  for(let i = 0;i<width/10;i++){
-    particles.push(new Particle());
-  }
 }
 
 function modelReady() {
